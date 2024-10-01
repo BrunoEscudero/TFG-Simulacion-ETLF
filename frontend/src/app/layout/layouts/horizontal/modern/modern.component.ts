@@ -18,14 +18,13 @@ import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.compon
 import { UserComponent } from 'app/layout/common/user/user.component';
 import { Subject, takeUntil } from 'rxjs';
 import { FuseNavigationItem } from '@fuse/components/navigation';
-import { RouterModule } from '@angular/router';
 
 @Component({
     selector     : 'modern-layout',
     templateUrl  : './modern.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, LanguagesComponent, FuseFullscreenComponent, SearchComponent, ShortcutsComponent, MessagesComponent, NotificationsComponent, UserComponent, RouterOutlet, QuickChatComponent, RouterModule],
+    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, LanguagesComponent, FuseFullscreenComponent, SearchComponent, ShortcutsComponent, MessagesComponent, NotificationsComponent, UserComponent, RouterOutlet, QuickChatComponent],
 })
 export class ModernLayoutComponent implements OnInit, OnDestroy
 {
