@@ -14,8 +14,8 @@
             <!-- Logo -->
             <div class="flex items-center h-20 pt-6 px-8">
                 <img
-                    class="w-24"
-                    src="assets/images/logo/logo-text-on-dark.svg"
+                    class="w-20"
+                    src="assets/images/GENESIS/ICONO/96X96/96 96.png"
                     alt="Logo image">
             </div>
         </ng-container>
@@ -26,17 +26,17 @@
 <div class="flex flex-col flex-auto w-full min-w-0 min-h-screen"> <!-- Añadido min-h-screen -->
 
     <!-- Header -->
-    <div class="relative flex flex-0 items-center w-full h-16 sm:h-20 px-4 md:px-6 z-49 shadow dark:shadow-none dark:border-b bg-card dark:bg-transparent print:hidden">
+    <div class="relative flex flex-0 items-center w-full h-16 sm:h-18 px-4 md:px-9 z-49 shadow dark:shadow-none dark:border-b bg-card dark:bg-transparent print:hidden">
         <ng-container *ngIf="!isScreenSmall">
             <!-- Logo -->
             <div class="flex items-center mx-2 lg:mr-8">
                 <div class="hidden lg:flex">
                     <img
-                        class="dark:hidden w-10"
+                        class="dark:hidden w-9"
                         src="assets/images/GENESIS/ICONO/96X96/96 96.png">
                 </div>
                 <img
-                    class="flex lg:hidden w-8"
+                    class="flex lg:hidden w-7"
                     src="assets/images/GENESIS/ICONO/96X96/96 96.png">
             </div>
             <!-- Horizontal navigation -->
@@ -45,6 +45,14 @@
                 [name]="'mainNavigation'"
                 [navigation]="navigationItems"></fuse-horizontal-navigation>
         </ng-container>
+        <!-- Profile on the right -->
+        <div class="ml-auto flex items-center" (click)="signOut()">
+            <a [routerLink]="'/perfil'" class="flex items-center">
+                <mat-icon
+                class="icon-size-7"
+                [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
+            </a>
+        </div>
     </div>
 
     <!-- Content -->

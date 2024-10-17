@@ -3,6 +3,7 @@ import { CSP_NONCE, inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environment/environment';
+import { Router } from '@angular/router';
 
 @Injectable({providedIn: 'root'})
 
@@ -10,13 +11,25 @@ export class AuthService {
 
     private _authenticated: boolean = false;
     private _httpClient = inject(HttpClient);
+    private _router = inject(Router);  // Inyectamos el servicio Router
 
     // Datos
     idUser: number = 0;
     user: string = '';
     token: string = '';
-    role: number = -1;
-    //roleSub = new BehaviorSubject(0);
+    rol: number = -1;
+    estado: number = -1;
+
+    constructor() {
+        this.loadUserRole();  // Carga el rol del usuario al iniciar el servicio
+    }
+
+    private loadUserRole(): void {
+        const storedRole = localStorage.getItem('userRole');
+        if (storedRole) {
+            this.rol = Number(storedRole);  // Convierte de string a número
+        }
+    }
 
     set accessToken(token: string)
     {
@@ -26,6 +39,25 @@ export class AuthService {
     get accessToken(): string
     {
         return localStorage.getItem('accessToken') ?? '';
+    }
+
+    // Verificar si el usuario está autenticado
+    get isAuthenticated(): boolean {
+        return this._authenticated;
+    }
+
+    isTokenExpired(): boolean {
+        const token = this.accessToken;
+        if (!token) {
+        return true;
+        }
+        return AuthUtils.isTokenExpired(token); // Lógica para verificar si el token ha expirado
+    }
+
+    // Verificar si el usuario es Admin (rol == 1 o el valor que uses para Admin)
+    isAdmin(): boolean {
+        console.log(this.rol)
+        return this.rol === 1; // Cambia '1' por el valor que representa a "admin" en tu sistema
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -65,19 +97,22 @@ export class AuthService {
         return this._httpClient.post(`${environment.apiBaseUrl}/auth/login`, credentials).pipe(
             switchMap((response: any) => {
     
-            // Almacena los datos del usuario
-            this.idUser = response.user.id;
-            this.user = response.user.username;
-            this.token = response.token;
-            this.role = response.user.role;
-
-            localStorage.setItem('accessToken', this.token);
-            this._authenticated = true;
-
-            return of(response);
+                // Almacena los datos del usuario
+                this.idUser = response.user.id;
+                this.user = response.user.username;
+                this.token = response.token;
+                this.rol = response.user.rol;  
+                this.estado = response.user.estado;
+    
+                // Almacena el rol en localStorage
+                localStorage.setItem('userRole', this.rol.toString());  // Convertir a string para almacenarlo
+    
+                localStorage.setItem('accessToken', this.token);
+                this._authenticated = true;
+    
+                return of(response);
             }),
             catchError(error => {
-                // Agrega aquí más información del error
                 console.error('Error al iniciar sesión:', error);
                 return throwError('Error al iniciar sesión: ' + (error.error.message || 'Unknown error'));
             })
@@ -85,53 +120,18 @@ export class AuthService {
     }    
 
     /**
-     * Sign in using the access token
-     */
-    signInUsingToken(): Observable<any>
-    {
-        // Sign in using the token
-        return this._httpClient.post('api/auth/sign-in-with-token', {
-            accessToken: this.accessToken,
-        }).pipe(
-            catchError(() =>
-
-                // Return false
-                of(false),
-            ),
-            switchMap((response: any) =>
-            {
-                // Replace the access token with the new one if it's available on
-                // the response object.
-                //
-                // This is an added optional step for better security. Once you sign
-                // in using the token, you should generate a new one on the server
-                // side and attach it to the response object. Then the following
-                // piece of code can replace the token with the refreshed one.
-                if ( response.accessToken )
-                {
-                    this.accessToken = response.accessToken;
-                }
-
-                // Set the authenticated flag to true
-                this._authenticated = true;
-
-                // Return true
-                return of(true);
-            }),
-        );
-    }
-
-    /**
      * Sign out
      */
-    signOut(): Observable<any>
-    {
+    signOut(): Observable<any> {
         // Remove the access token from the local storage
         localStorage.removeItem('accessToken');
-
+    
         // Set the authenticated flag to false
         this._authenticated = false;
-
+    
+        // Redirigir al usuario a la página de login
+        this._router.navigate(['/sign-in']); // Aquí rediriges al login
+    
         // Return the observable
         return of(true);
     }
@@ -141,45 +141,8 @@ export class AuthService {
      *
      * @param user
      */
-    signUp(user: { name: string; email: string; password: string; company: string }): Observable<any>
+    signUp(user: { username: string; password: string; rol: number; estado: number }): Observable<any>
     {
-        return this._httpClient.post('api/auth/sign-up', user);
-    }
-
-    /**
-     * Unlock session
-     *
-     * @param credentials
-     */
-    unlockSession(credentials: { email: string; password: string }): Observable<any>
-    {
-        return this._httpClient.post('api/auth/unlock-session', credentials);
-    }
-
-    /**
-     * Check the authentication status
-     */
-    check(): Observable<boolean>
-    {
-        // Check if the user is logged in
-        if ( this._authenticated )
-        {
-            return of(true);
-        }
-
-        // Check the access token availability
-        if ( !this.accessToken )
-        {
-            return of(false);
-        }
-
-        // Check the access token expire date
-        if ( AuthUtils.isTokenExpired(this.accessToken) )
-        {
-            return of(false);
-        }
-
-        // If the access token exists, and it didn't expire, sign in using it
-        return this.signInUsingToken();
+        return this._httpClient.post(`${environment.apiBaseUrl}/auth/register`, user);
     }
 }

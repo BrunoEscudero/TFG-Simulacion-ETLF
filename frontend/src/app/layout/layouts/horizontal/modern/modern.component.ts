@@ -18,44 +18,23 @@ import { ShortcutsComponent } from 'app/layout/common/shortcuts/shortcuts.compon
 import { UserComponent } from 'app/layout/common/user/user.component';
 import { Subject, takeUntil } from 'rxjs';
 import { FuseNavigationItem } from '@fuse/components/navigation';
+import { RouterModule } from '@angular/router';
+import { AuthService } from 'app/core/auth/auth.service';
 
 @Component({
     selector     : 'modern-layout',
     templateUrl  : './modern.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, LanguagesComponent, FuseFullscreenComponent, SearchComponent, ShortcutsComponent, MessagesComponent, NotificationsComponent, UserComponent, RouterOutlet, QuickChatComponent],
+    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, LanguagesComponent, FuseFullscreenComponent, SearchComponent, ShortcutsComponent, MessagesComponent, NotificationsComponent, UserComponent, RouterOutlet, QuickChatComponent, RouterModule],
 })
 export class ModernLayoutComponent implements OnInit, OnDestroy
 {
     isScreenSmall: boolean;
     navigation: Navigation;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-    navigationItems: FuseNavigationItem[] = [
-        {
-            id: 'simulaciones',
-            title: 'Simulaciones',
-            type: 'basic',
-            link: '/simulaciones',
-            icon: 'heroicons_outline:adjustments-horizontal'
-        },
-        {
-            id: 'localizaciones',
-            title: 'Localizaciones',
-            type: 'basic',
-            link: '/localizaciones',
-            icon: 'heroicons_outline:map'
-        },
-        {
-            id: 'gestion_usuarios',
-            title: 'Gestión usuarios',
-            type: 'basic',
-            link: '/gestion_usuarios',
-            icon: 'heroicons_outline:users'
-        },
-        // Agrega más elementos según sea necesario
-    ];
+    
+    navigationItems: FuseNavigationItem[] = [];
 
     /**
      * Constructor
@@ -66,8 +45,41 @@ export class ModernLayoutComponent implements OnInit, OnDestroy
         private _navigationService: NavigationService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService,
+        private _authService: AuthService // Inyectamos AuthService
     )
     {
+        this.setNavigationItems(); // Inicializamos los elementos de navegación aquí
+    }
+
+    private setNavigationItems(): void {
+        // Siempre añade los elementos comunes
+        this.navigationItems = [
+            {
+                id: 'simulaciones',
+                title: 'Simulaciones',
+                type: 'basic',
+                link: '/simulaciones',
+                icon: 'heroicons_outline:adjustments-horizontal'
+            },
+            {
+                id: 'localizaciones',
+                title: 'Localizaciones',
+                type: 'basic',
+                link: '/localizaciones',
+                icon: 'heroicons_outline:map'
+            },
+        ];
+
+        // Añade "Gestión usuarios" solo si el usuario es admin
+        if (this._authService.isAdmin()) {
+            this.navigationItems.push({
+                id: 'gestion_usuarios',
+                title: 'Gestión usuarios',
+                type: 'basic',
+                link: '/gestion_usuarios',
+                icon: 'heroicons_outline:users'
+            });
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -138,5 +150,9 @@ export class ModernLayoutComponent implements OnInit, OnDestroy
             // Toggle the opened status
             navigation.toggle();
         }
+    }
+
+    signOut() {
+        this._authService.signOut();
     }
 }

@@ -52,7 +52,8 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
-                role: user.rol,  // Asegúrate de que este campo exista en el modelo
+                rol: user.rol,  // Asegúrate de que este campo exista en el modelo
+                estado: user.estado,  // Asegúrate de que este campo exista en el modelo
             },
         });
     } catch (error) {
@@ -98,4 +99,29 @@ const updateUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, deleteUser, updateUser };
+// Método para obtener todos los usuarios
+const getAllUsers = async (req, res) => {
+    try {
+        // Obtener todos los usuarios
+        const users = await User.findAll({
+        });
+
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener los usuarios', error });
+    }
+};
+
+// Método para obtener un usuario por id
+const getUserById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Obtener todos los usuarios
+        const user = await User.findByPk(id);
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener el usuario', error });
+    }
+};
+
+module.exports = { register, login, deleteUser, updateUser, getAllUsers, getUserById };
